@@ -179,12 +179,59 @@ class App
     private void removeInspector()
     {
         // TODO
-        //1º - Apagar quem?
-        System.out.println("");
-        //2º - tens certeza meu puto?
-        //3º - Apagar (com sql)
-        System.out.println("removeInspector()");
-
+        boolean flag = false;
+        Scanner s = new Scanner(System.in);
+        while(flag==false) {
+            System.out.println("Mekie meu puto queres apagar como: ");
+            System.out.println("0. EXIT");
+            System.out.println("1. email");
+            System.out.println("2. nome");
+            System.out.print(">");
+            String inp = s.nextLine();
+            if (inp.equals("0")){
+                flag = true;
+            }
+            if(inp.equals("1")) {
+                System.out.println();
+                try{;
+                    Connection con = DriverManager.getConnection(getConnectionString());
+                    Statement stmt = con.createStatement();
+                    ResultSet rs = stmt.executeQuery("SELECT DISTINCT u.email FROM UTILIZADOR u \n JOIN TRABALHO t ON u.email = t.inspetor");
+                    printResults(rs);
+                }
+                catch(Exception e){
+                    System.out.println(e);
+                }
+                System.out.println();
+                System.out.println("Insere o email do inspector: ");
+                String email = s.nextLine();
+                try{
+                    Connection con = DriverManager.getConnection(getConnectionString());
+                    Statement stmt = con.createStatement();
+                    String SQL = "DELETE FROM UTILIZADOR WHERE email = '" + email + "';";
+                    stmt.executeQuery(SQL);
+                }
+                catch(Exception ignored){}
+                flag = true;
+            }
+            if(inp.equals("2")) {
+                System.out.println();
+                listInspectors();
+                System.out.println("");
+                System.out.println("Insere o nome do inspector a remover: ");
+                String nome = s.nextLine();
+                try{
+                    Connection con = DriverManager.getConnection(getConnectionString());
+                    Statement stmt = con.createStatement();
+                    String SQL = "DELETE FROM UTILIZADOR WHERE nome='" + nome + "';";
+                    stmt.executeQuery(SQL);
+                }
+                catch(Exception ignored){}
+                flag = true;
+            }
+        }
+        System.out.println("Delete terminado");
+        //System.out.println("removeInspector()");
     }
 
     private void totalCost()
