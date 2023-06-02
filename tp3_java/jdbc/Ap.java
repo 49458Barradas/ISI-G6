@@ -206,7 +206,6 @@ class App
 
 public class Ap{
     public static void main(String[] args) throws Exception{
-        
         String url = "jdbc:postgresql://10.62.73.58:5432/?user=ab6&password=ab6&ssl=false";
         App.getInstance().setConnectionString(url);
         App.getInstance().Run();
