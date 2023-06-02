@@ -148,7 +148,7 @@ class App
     */
 
     private static final int TAB_SIZE = 24;
-    void printResults(ResultSet dr) throws SQLException {
+    static void printResults(ResultSet dr) throws SQLException {
         ResultSetMetaData metaData = dr.getMetaData();
         int columnCount = metaData.getColumnCount();
 
@@ -167,7 +167,7 @@ class App
         }
     }
 
-    private void novelInspection() {
+    private void novelInspection() { //adicionar de inspeção principal
         // IMPLEMENTED
         System.out.println("novelInspection()");
         String values = Model.inputData( "work id, condition index and state of conservation.\n");
@@ -189,9 +189,16 @@ class App
 
     private void totalCost()
     {
-        // TODO
-        System.out.println("totalCost()");
-
+        try{;
+            Connection con = DriverManager.getConnection(getConnectionString());
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT SUM(custo) FROM OBRA_CONTENCAO");
+            printResults(rs);
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+        //System.out.println("totalCost()");
     }
 
     private void listWorks() {
@@ -233,7 +240,6 @@ class App
             System.out.println(e);
         }
         //System.out.println("listInspectors");
-        
     }
 
 }

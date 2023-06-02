@@ -38,27 +38,29 @@ class Model {
 
     static void registerInspection(PrincipalInspection pi)
     {
-        String SELECT_CMD = "SELECT * FROM INSPECCAOPRINCIPAL WHERE idObra = ? AND data = ?";
-        String INSERT_CMD = "INSERT INTO INSPECCAOPRINCIPAL VALUES(?,?,?,?,?,?,?)";
-        //TODO
-
+        String SELECT_CMD = "SELECT * FROM INSPECAO_PRINCIPAL";
+        String INSERT_CMD = "INSERT INTO INSPECAO_PRINCIPAL (id_trabalho, indice_condicao, estado_conservacao) VALUES(" + pi.getWorkID() + "," + pi.getCondition() + "," + pi.getState() + ")";
         try (
                 Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
                 PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
-                //PreparedStatement pstmt1 = con.prepareStatement("");
                 PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD);
-                //PreparedStatement pstmt2 = con.prepareStatement("");
 
         ) {
-            con.setAutoCommit(false);            
-            // TODO
-            System.out.println("Principal inspection registered!!!!");
+            con.setAutoCommit(false);
+            int rowsInserted = pstmt2.executeUpdate();
+            ResultSet rs = pstmt1.executeQuery();
+            if (rowsInserted > 0) {
+                System.out.println("Principal inspection registered!!!!");
+                App.printResults(rs);
+            } else {
+                System.out.println("Failed to register principal inspection.");
+            }
+            con.commit();
         } catch (SQLException e) {
-            e.getMessage();
+            e.printStackTrace();
             System.out.println("Error on insert values");
         }
     }
-
     
 
 }
