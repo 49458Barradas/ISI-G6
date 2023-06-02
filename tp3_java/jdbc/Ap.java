@@ -149,15 +149,22 @@ class App
 
     private static final int TAB_SIZE = 24;
     void printResults(ResultSet dr) throws SQLException {
-        
-        //TODO
-        /*Result must be similar like:
-        ListDepartment()
-        dname           dnumber     mgrssn      mgrstartdate            
-        -----------------------------------------------------
-        Research        5           333445555   1988-05-22            
-        Administration  4           987654321   1995-01-01
-        */ 
+        ResultSetMetaData metaData = dr.getMetaData();
+        int columnCount = metaData.getColumnCount();
+
+        // Print column names
+        for (int i = 1; i <= columnCount; i++) {
+            System.out.print(metaData.getColumnName(i) + "\t");
+        }
+        System.out.println("\n-----------------------------------------------------");
+
+        // Print row data
+        while (dr.next()) {
+            for (int i = 1; i <= columnCount; i++) {
+                System.out.print(dr.getString(i) + "\t\t");
+            }
+            System.out.println();
+        }
     }
 
     private void novelInspection() {
@@ -172,6 +179,10 @@ class App
     private void removeInspector()
     {
         // TODO
+        //1º - Apagar quem?
+        System.out.println("");
+        //2º - tens certeza meu puto?
+        //3º - Apagar (com sql)
         System.out.println("removeInspector()");
 
     }
@@ -184,21 +195,44 @@ class App
     }
 
     private void listWorks() {
-        // TODO
-        System.out.println("listWorks()");
+        try{;
+            Connection con = DriverManager.getConnection(getConnectionString());
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM TRABALHO");
+            printResults(rs);
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+        //System.out.println("listWorks()");
     }
 
     private void listContentionWorks()
     {
-        // TODO
-        System.out.println("listWorks()");
-        
+        try{;
+            Connection con = DriverManager.getConnection(getConnectionString());
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM OBRA_CONTENCAO");
+            printResults(rs);
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+        //System.out.println("listContentionWorks()");
     }
 
     private void listInspectors()
     {
-        // TODO
-        System.out.println("listInspectors");
+        try{;
+            Connection con = DriverManager.getConnection(getConnectionString());
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT DISTINCT u.nome FROM UTILIZADOR u \n JOIN TRABALHO t ON u.email = t.inspetor");
+            printResults(rs);
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+        //System.out.println("listInspectors");
         
     }
 

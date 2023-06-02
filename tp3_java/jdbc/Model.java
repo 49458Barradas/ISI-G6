@@ -38,13 +38,16 @@ class Model {
 
     static void registerInspection(PrincipalInspection pi)
     {
-        
+        String SELECT_CMD = "SELECT * FROM INSPECCAOPRINCIPAL WHERE idObra = ? AND data = ?";
+        String INSERT_CMD = "INSERT INTO INSPECCAOPRINCIPAL VALUES(?,?,?,?,?,?,?)";
         //TODO
 
         try (
                 Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
                 PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+                //PreparedStatement pstmt1 = con.prepareStatement("");
                 PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD);
+                //PreparedStatement pstmt2 = con.prepareStatement("");
 
         ) {
             con.setAutoCommit(false);            
