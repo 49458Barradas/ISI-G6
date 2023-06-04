@@ -178,7 +178,6 @@ class App
       
     private void removeInspector()
     {
-        // TODO
         boolean flag = false;
         Scanner s = new Scanner(System.in);
         while(flag==false) {
