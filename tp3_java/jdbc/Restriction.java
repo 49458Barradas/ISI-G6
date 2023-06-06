@@ -24,5 +24,7 @@ import java.util.Scanner;
 class Restriction {
 
 // TODO
+    //fazer metodos para chamar no model
+    //no app 3 antes de realizar os inserts devemos verificar se passa nas restricoes impostas
 
 }

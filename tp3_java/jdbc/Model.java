@@ -38,29 +38,34 @@ class Model {
 
     static void registerInspection(PrincipalInspection pi)
     {
-        String SELECT_CMD = "SELECT * FROM INSPECAO_PRINCIPAL";
-        String INSERT_CMD = "INSERT INTO INSPECAO_PRINCIPAL (id_trabalho, indice_condicao, estado_conservacao) VALUES(" + pi.getWorkID() + "," + pi.getCondition() + "," + pi.getState() + ")";
-        try (
-                Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
-                PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
-                PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD);
-
-        ) {
+        String SQL = "INSERT INTO TRABALHO (data_planeada, data_execucao, estado, id_obra, inspector VALUES(?, ? , ? , ? , ?) RETURNING id";
+        String INSERT_CMD = "INSERT INTO INSPECAO_PRINCIPAL (id_trabalho, indice_condicao, estado_conservacao) VALUES(?, ?, ?)";
+        try {
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt1 = con.prepareStatement(SQL);
+            pstmt1.setDate(1, pi.getPlanedDate());
+            pstmt1.setDate(2, pi.getExecutionDate());
+            pstmt1.setString(3, pi.getState());
+            pstmt1.setInt(4, pi.getIDObra());
+            pstmt1.setString(5, pi.getInspector());
+            pstmt1.setString(6, pi.getManager());
+            pstmt1.setString(7, pi.getArtDisc());
             con.setAutoCommit(false);
-            int rowsInserted = pstmt2.executeUpdate();
             ResultSet rs = pstmt1.executeQuery();
-            if (rowsInserted > 0) {
-                System.out.println("Principal inspection registered!!!!");
-                App.printResults(rs);
-            } else {
-                System.out.println("Failed to register principal inspection.");
-            }
+            int id_trabalho = rs.getInt(1);
+            PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD);
+            pstmt2.setInt(1, id_trabalho);
+            pstmt2.setInt(2, pi.getCondition());
+            pstmt2.setInt(3, pi.getConservationState());
+            pstmt2.executeUpdate();
+            ResultSet rs2 = pstmt2.executeQuery();
             con.commit();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Error on insert values");
+            rs2.close();
+            pstmt2.close();
+            rs.close();
+            pstmt1.close();
+            con.close();
         }
+        catch(Exception ignored){}
     }
-    
-
 }

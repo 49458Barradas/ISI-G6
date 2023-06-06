@@ -172,120 +172,171 @@ class App
         System.out.println("novelInspection()");
         String values = Model.inputData( "work id, condition index and state of conservation.\n");
         // validate all entries!
-        PrincipalInspection pi = new PrincipalInspection(values);
+        String value = Model.inputData( "planed date, execution date, state, id da obra, inspector, manager, atributo discriminante [data sobre o formato dd-mm-yyyy].\n");
+        PrincipalInspection pi = new PrincipalInspection(values, value);
         Model.registerInspection(pi);
     }
       
     private void removeInspector()
     {
-        boolean flag = false;
         Scanner s = new Scanner(System.in);
-        while(flag==false) {
-            System.out.println("Mekie meu puto queres apagar como: ");
-            System.out.println("0. EXIT");
-            System.out.println("1. email");
-            System.out.println("2. nome");
-            System.out.print(">");
-            String inp = s.nextLine();
-            if (inp.equals("0")){
-                flag = true;
-            }
-            if(inp.equals("1")) {
-                System.out.println();
-                try{;
-                    Connection con = DriverManager.getConnection(getConnectionString());
-                    Statement stmt = con.createStatement();
-                    ResultSet rs = stmt.executeQuery("SELECT DISTINCT u.email FROM UTILIZADOR u \n JOIN TRABALHO t ON u.email = t.inspetor");
-                    printResults(rs);
-                }
-                catch(Exception e){
-                    System.out.println(e);
-                }
-                System.out.println();
-                System.out.println("Insere o email do inspector: ");
-                String email = s.nextLine();
-                try{
-                    Connection con = DriverManager.getConnection(getConnectionString());
-                    Statement stmt = con.createStatement();
-                    String SQL = "DELETE FROM UTILIZADOR WHERE email = '" + email + "';";
-                    stmt.executeQuery(SQL);
-                }
-                catch(Exception ignored){}
-                flag = true;
-            }
-            if(inp.equals("2")) {
-                System.out.println();
-                listInspectors();
-                System.out.println("");
-                System.out.println("Insere o nome do inspector a remover: ");
-                String nome = s.nextLine();
-                try{
-                    Connection con = DriverManager.getConnection(getConnectionString());
-                    Statement stmt = con.createStatement();
-                    String SQL = "DELETE FROM UTILIZADOR WHERE nome='" + nome + "';";
-                    stmt.executeQuery(SQL);
-                }
-                catch(Exception ignored){}
-                flag = true;
-            }
+        System.out.println("Mekie meu puto queres apagar como: ");
+        System.out.print(">");
+        String inp = s.nextLine();
+        try{
+            Connection con = DriverManager.getConnection(getConnectionString());
+            Statement stmt = con.createStatement();
+            String SQL = "DELETE FROM UTILIZADOR WHERE email='" + inp + "';";
+            stmt.executeQuery(SQL);
+            con.close();
         }
+        catch(Exception ignored){}
         System.out.println("Delete terminado");
         //System.out.println("removeInspector()");
     }
 
     private void totalCost()
     {
-        try{;
-            Connection con = DriverManager.getConnection(getConnectionString());
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT SUM(custo) FROM OBRA_CONTENCAO");
-            printResults(rs);
+        System.out.println("Insere o tipo de estrutura [muro/parede/aterro/talude/barreira/solução mista]: ");
+        System.out.print(">");
+        String structure_type = readln();
+        try{
+            Connection conn = DriverManager.getConnection(getConnectionString());
+            Statement stmt = conn.createStatement();
+            ResultSet rset = stmt.executeQuery("SELECT custo, te.tipo FROM OBRA_CONTENCAO oc JOIN TIPO_ESTRUTURA te ON oc.tipo_estrutura = te.id WHERE te.tipo = '" + structure_type + "'");
+            printResults(rset);
+            rset.close();
+            stmt.close();
+            conn.close();
         }
-        catch(Exception e){
-            System.out.println(e);
-        }
-        //System.out.println("totalCost()");
+        catch(Exception ignored){}
+        System.out.println("totalCostContentionWork()");
     }
 
-    private void listWorks() {
-        try{;
-            Connection con = DriverManager.getConnection(getConnectionString());
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM TRABALHO");
-            printResults(rs);
-        }
-        catch(Exception e){
-            System.out.println(e);
-        }
-        //System.out.println("listWorks()");
-    }
-
-    private void listContentionWorks()
+    private void listInspector()
     {
         try{;
-            Connection con = DriverManager.getConnection(getConnectionString());
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM OBRA_CONTENCAO");
-            printResults(rs);
-        }
-        catch(Exception e){
-            System.out.println(e);
-        }
-        //System.out.println("listContentionWorks()");
-    }
-
-    private void listInspectors()
-    {
-        try{;
-            Connection con = DriverManager.getConnection(getConnectionString());
-            Statement stmt = con.createStatement();
+            Connection conn = DriverManager.getConnection("jdbc:postgresql://10.62.73.58:5432/?user=ab6&password=ab6&ssl=false");
+            Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT DISTINCT u.nome FROM UTILIZADOR u \n JOIN TRABALHO t ON u.email = t.inspetor");
             printResults(rs);
         }
         catch(Exception e){
             System.out.println(e);
         }
-        //System.out.println("listInspectors");
+        //System.out.println("listInspector");
+    }
+
+    private void listWorks() {
+        listGestor();
+        System.out.println("");
+        System.out.println("Insere o Gestor [que realizou os trabalhos]: ");
+        System.out.print(">");
+        String gestor = readln();
+        System.out.println("");
+        listInspectors();
+        System.out.println("");
+        System.out.println("Insere o Inspetor [que não inspecionou o trabalho]: ");
+        System.out.print(">");
+        System.out.println("");
+        String inspetor = readln();
+        System.out.println("");
+        try{
+            Connection conn = DriverManager.getConnection(getConnectionString());
+            Statement stmt = conn.createStatement();
+            ResultSet rset = stmt.executeQuery("select  t.id as \"id_trabalho\"\n" +
+                    "from trabalho t\n" +
+                    "join utilizador gestor on gestor.email = t.gestor\n" +
+                    "join utilizador inspetor on inspetor.email = t.inspetor\n" +
+                    "where  gestor.nome = '" + gestor + "' and inspetor.nome <> '" + inspetor +"';");
+            conn.close();
+            printResults(rset);
+        }
+        catch(Exception ignored){}
+        System.out.println("allWorksDoneBy()");
+    }
+
+    public static String[] separateStringByComma(String input) {
+        String[] separatedStrings = input.split(",");
+        return separatedStrings;
+    }
+
+    private void listContentionWorks()
+    {
+        System.out.println("Insere o atributo discriminante de TRABALHO [CM/IP/IR] : ");
+        System.out.print(">");
+        String tipo = readln();
+        System.out.println("");
+        System.out.println("Insere o(s) estado(s) dos trabalhos [executado/validado/planeado]: ");
+        System.out.print(">");
+        String temp = readln();
+        String[] estados = separateStringByComma(temp);
+        System.out.println("");
+        try{
+            Connection conn = DriverManager.getConnection(getConnectionString());
+            Statement stmt = conn.createStatement();
+            Integer idx = 0;
+            String SQL = "select distinct  oc.id\n" +
+                    "from obra_contencao oc \n" +
+                    "join trabalho t on oc.id = t.id_obra \n" +
+                    "where t.atrdisc <> '" + tipo +  "' or t.atrdisc = '" + tipo + "' ";
+            while(idx<estados.length){
+                SQL += "AND t.estado <> '" + estados[idx] + "' ";
+                idx++;
+            }
+            SQL += "\norder by oc.id asc;";
+            System.out.println(SQL);
+            ResultSet rset = stmt.executeQuery(SQL);
+            conn.close();
+            printResults(rset);
+        }
+        catch(Exception ignored){}
+        System.out.println("listContentionWorks()");
+    }
+
+    private void listGestor()
+    {
+        try{;
+            Connection conn = DriverManager.getConnection(getConnectionString());
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT DISTINCT u.email FROM UTILIZADOR u \n JOIN TRABALHO t ON u.email = t.gestor");
+            conn.close();
+            printResults(rs);
+        }
+        catch(Exception ignored){}
+    }
+
+    private void listInspectors()
+    {
+        listGestor();
+        System.out.println("");
+        System.out.println("Insere email do Gestor: ");
+        System.out.print(">");
+        String gestor = readln();
+        System.out.println("");
+        try{
+            Connection conn = DriverManager.getConnection(getConnectionString());
+            Statement stmt = conn.createStatement();
+            ResultSet rset = stmt.executeQuery("select  distinct  u.nome\n" +
+                    "from utilizador u\n" +
+                    "join trabalho t on u.email = t.inspetor\n" +
+                    "where  t.gestor  in (\n" +
+                    "  select  t2.gestor \n" +
+                    "  from trabalho t2\n" +
+                    "  join utilizador u2 on t2.gestor = u2.email\n" +
+                    "  where  u2.nome = '" + gestor + "'\n" +
+                    ");");
+            conn.close();
+            printResults(rset);
+        }
+        catch(Exception ignored){}
+        System.out.println("inspectorsThatWorkWith()");
+    }
+
+    private static String readln() {
+        Scanner s = new Scanner(System.in);
+        String inp = s.nextLine();
+        return inp;
     }
 
 }
@@ -295,5 +346,6 @@ public class Ap{
         String url = "jdbc:postgresql://10.62.73.58:5432/?user=ab6&password=ab6&ssl=false";
         App.getInstance().setConnectionString(url);
         App.getInstance().Run();
+        //ADICIONAR AQUI O ELIMINAR CLASSES QUE NAO RESPEITAM
     }
 }
